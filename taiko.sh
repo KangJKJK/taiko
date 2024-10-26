@@ -84,18 +84,18 @@ case $choice in
 
     # accounts.js 파일 생성 및 초기화
     {
-        echo "/**"
-        echo " * Private key list file"
-        echo " * write your private key here like this"
-        echo " * export const privateKey = ["
+        echo "export const privateKey = ["
         
         # 개인키를 배열 형식으로 추가
         for i in "${!keys_array[@]}"; do
-            echo " *   \"${keys_array[i]}\","
+            if [ $i -eq $((${#keys_array[@]} - 1)) ]; then
+                echo "  \"${keys_array[i]}\""
+            else
+                echo "  \"${keys_array[i]}\","
+            fi
         done
-
-        echo " * ];"
-        echo " */"
+    
+        echo "];"
     } > "$WORK/accounts/accounts.js"
 
     echo -e "${GREEN}개인키 정보가 .env파일에 저장되었습니다.${NC}"
