@@ -53,7 +53,6 @@ case $choice in
 
     # WRAPUNWRAPCOUNT에 입력한 횟수의 절반을 계산합니다.
     wrap_unwrap_count=$((transaction_count / 2))
-
     
     # config 파일 생성 및 초기화
     {
