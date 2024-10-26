@@ -82,18 +82,21 @@ case $choice in
     # 개인키를 배열로 변환
     IFS=',' read -r -a keys_array <<< "$private_keys"
 
-    # env 파일 생성 및 초기화
+    # accounts.js 파일 생성 및 초기화
     {
-        echo "RPC_URL=https://rpc.taiko.tools/"
-        echo "CONTRACT_ADDRESS=0xA51894664A773981C6C112C43ce576f315d5b1B6"
-        echo "TELEGRAM_BOT_TOKEN=your_telegram_bot_token"
-        echo "TELEGRAM_CHAT_ID=your_telegram_chat_id"
-        # 개인키를 .env 파일에 추가
+        echo "/**"
+        echo " * Private key list file"
+        echo " * write your private key here like this"
+        echo " * export const privateKey = ["
+        
+        # 개인키를 배열 형식으로 추가
         for i in "${!keys_array[@]}"; do
-            echo "PRIVATE_KEY_$((i + 1))=${keys_array[i]}"
+            echo " *   \"${keys_array[i]}\","
         done
 
-    } > "$WORK/.env"
+        echo " * ];"
+        echo " */"
+    } > "$WORK/accounts/accounts.js"
 
     echo -e "${GREEN}개인키 정보가 .env파일에 저장되었습니다.${NC}"
 
