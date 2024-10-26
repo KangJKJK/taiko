@@ -77,7 +77,7 @@ case $choice in
 
 
     # 사용자에게 프록시 사용 여부를 물어봅니다.
-    read -p "개인키를 입력하세요. 여러 계정일 경우 쉼표로 구분하세요. (y/n): " private_keys
+    read -p "개인키를 입력하세요. 여러 계정일 경우 쉼표로 구분하세요.: " private_keys
 
     # 개인키를 배열로 변환
     IFS=',' read -r -a keys_array <<< "$private_keys"
