@@ -61,7 +61,7 @@ case $choice in
         echo "  \"weth\": {"
         echo "    \"iterations\": 50,"
         echo "    \"interval\": 5,"
-        echo "    \"gasPrice\": \"0.4\","
+        echo "    \"gasPrice\": \"0.2\","
         echo "    \"amount_min\": \"0.000001\","
         echo "    \"amount_max\": \"0.000004\","
         echo "    \"wallets\": {"
