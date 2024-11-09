@@ -61,12 +61,10 @@ case $choice in
         echo "  \"weth\": {"
         echo "    \"iterations\": 35,"
         echo "    \"interval\": 300,"
-        echo "    \"gasPrice\": {"
-        echo "      \"auto\": true,"
-        echo "      \"multiplier\": 1.2,"
-        echo "      \"maxPrice\": \"1.5\","
-        echo "      \"minPrice\": \"0.1\""
-        echo "    },"
+        echo "    \"gasPrice\": \"auto\","
+        echo "    \"gasPriceMultiplier\": 1.2,"
+        echo "    \"maxGasPrice\": \"1.5\","
+        echo "    \"minGasPrice\": \"0.1\","
         echo "    \"amount_min\": \"0.00001\","
         echo "    \"amount_max\": \"0.0001\","
         echo "    \"wallets\": {"
@@ -165,3 +163,4 @@ case $choice in
     echo -e "${RED}잘못된 선택입니다. 다시 시도하세요.${NC}"
     ;;
 esac
+
