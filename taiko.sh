@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 환경 변수 설정
-export WORK="/root/TaikoBot"
+export WORK="/root/taiko_bot"
 export NVM_DIR="$HOME/.nvm"
 
 # 색상 정의
@@ -13,7 +13,7 @@ NC='\033[0m' # 색상 초기화
 
 echo -e "${GREEN}Taiko 봇을 설치합니다.${NC}"
 echo -e "${GREEN}스크립트작성자: https://t.me/kjkresearch${NC}"
-echo -e "${GREEN}출처: https://github.com/airdropinsiders/TaikoBot${NC}"
+echo -e "${GREEN}출처: https://github.com/caraka15/taiko_bot${NC}"
 
 echo -e "${GREEN}설치 옵션을 선택하세요:${NC}"
 echo -e "${YELLOW}1. Taiko 봇 새로 설치${NC}"
@@ -37,7 +37,7 @@ case $choice in
 
     # GitHub에서 코드 복사
     echo -e "${YELLOW}GitHub에서 코드 복사 중...${NC}"
-    git clone https://github.com/airdropinsiders/TaikoBot.git
+    git clone https://github.com/caraka15/taiko_bot
     cd "$WORK"
 
     # Node.js LTS 버전 설치 및 사용
@@ -48,60 +48,80 @@ case $choice in
     nvm use --lts
     npm install
 
-    # 사용자에게 트랜잭션 발생 횟수를 입력받습니다.
-    read -p "트랜잭션을 몇 번 발생시킬지 입력하세요.: " transaction_count
-
-    # WRAPUNWRAPCOUNT에 입력한 횟수의 절반을 계산합니다.
-    wrap_unwrap_count=$((transaction_count / 2))
-    
     # config 파일 생성 및 초기화
     {
-        echo "export class Config {"
-        echo "  static WRAPUNWRAPCOUNT = $wrap_unwrap_count; //1 WRAPUNWRAPCOUNT = 2x TX (랩 / 언랩) 또는 (ETH를 WETH로 스왑하고 다시 스왑)"
-        echo "  static TXAMOUNTMIN = 0.0001; //최소 거래 금액"
-        echo "  static TXAMOUNTMAX = 0.0002; //최대 거래 금액"
-        echo "  static GWEIPRICE = 0.15; //GWEI 가격"
-        echo "  static WAITFORBLOCKCONFIRMATION = true; //TRUE일 경우 거래 실행 후 봇이 거래가 채굴될 때까지 대기, FALSE일 경우 거래 실행 후 다음 거래로 진행"
-        echo ""
-        echo "  //네트워크 제공자 RPC"
-        echo "  static RPC = {"
-        echo "    CHAINID: 167000,"
-        echo "    RPCURL: \"https://rpc.mainnet.taiko.xyz\","
-        echo "    EXPLORER: \"https://taikoscan.io/\","
-        echo "    SYMBOL: \"ETH\","
-        echo "  };"
-        echo "  //WETH 계약"
-        echo "  static WETHCONTRACTADDRESS = \"0x4200000000000000000000000000000000000006\";"
-        echo "}"
-    } > "$WORK/config/config.js"
+        echo "export const Config = {" 
+        echo "  timezone: 'Asia/Jakarta',"
+        echo "  scheduledTime: '07:00',"
+        echo "  confirmation: {"
+        echo "    required: 1,"
+        echo "    maxRetries: 3,"
+        echo "    retryDelay: 5000"
+        echo "  },"
+        echo "  weth: {"
+        echo "    iterations: 35,"
+        echo "    interval: 300,"
+        echo "    gasPrice: '0.1',"
+        echo "    amount_min: '0.001',"
+        echo "    amount_max: '0.003',"
+        echo "    wallets: {"
+        echo "      wallet1: {"
+        echo "        amount_min: '0.001',"
+        echo "        amount_max: '0.003'"
+        echo "      }"
+        echo "    }"
+        echo "  },"
+        echo "  vote: {"
+        echo "    iterations: 70,"
+        echo "    interval: 300,"
+        echo "    maxFee: '0.25',"
+        echo "    maxPriorityFee: '0.12'"
+        echo "  }"
+        echo "};"
+    } > "$WORK/config/config.json"
 
-
-    # 사용자에게 프록시 사용 여부를 물어봅니다.
+    # 사용자에게 개인키를 입력받습니다.
     read -p "개인키를 입력하세요. 여러 계정일 경우 쉼표로 구분하세요.: " private_keys
 
     # 개인키를 배열로 변환
     IFS=',' read -r -a keys_array <<< "$private_keys"
 
-    # accounts.js 파일 생성 및 초기화
     {
-        echo "export const privateKey = ["
+        echo "RPC_URL=https://rpc.mainnet.taiko.xyz"
+        echo ""
+        echo "WETH_CONTRACT_ADDRESS=0xA51894664A773981C6C112C43ce576f315d5b1B6"
+        echo "VOTE_CONTRACT_ADDRESS=0x4D1E2145082d0AB0fDa4a973dC4887C7295e21aB"
+        echo ""
+        echo "TELEGRAM_BOT_TOKEN="
+        echo "TELEGRAM_CHAT_ID="
+        echo ""
         
-        # 개인키를 배열 형식으로 추가
-        for i in "${!keys_array[@]}"; do
-            if [ $i -eq $((${#keys_array[@]} - 1)) ]; then
-                echo "  \"${keys_array[i]}\""
-            else
-                echo "  \"${keys_array[i]}\","
-            fi
+        for i in "${!private_keys[@]}"; do
+            echo "PRIVATE_KEY_$((i+1))=${private_keys[i]}"
         done
-    
-        echo "];"
-    } > "$WORK/accounts/accounts.js"
+        
+    } > "$WORK/.env"
 
-    echo -e "${GREEN}개인키 정보가 .env파일에 저장되었습니다.${NC}"
+    # 봇 구동 방식 선택
+    echo -e "${GREEN}봇 구동 방식을 선택하세요:${NC}"
+    echo -e "${YELLOW}1. 즉시 시작${NC}"
+    echo -e "${YELLOW}2. 스케줄 실행 (매일 오전 7시)${NC}"
+    read -p "선택: " run_choice
+    case $run_choice in
 
-    # 봇 구동
-    npm start
+      1)
+        echo -e "${CYAN}봇을 즉시 시작합니다...${NC}"
+        npm run start:weth:now
+        ;;
+      2)
+        echo -e "${CYAN}봇을 스케줄 모드로 시작합니다 (매일 오전 7시 실행).${NC}"
+        npm run start:weth
+        ;;
+      *)
+        echo -e "${RED}잘못된 선택입니다. 기본값으로 즉시 시작합니다.${NC}"
+        npm run start:weth:now
+        ;;
+    esac
     ;;
     
   2)
@@ -111,10 +131,29 @@ case $choice in
 
     # nvm 로드
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    # 봇 구동
 
+    # 봇 구동
     npm install
-    npm start
+    # 봇 구동 방식 선택
+    echo -e "${GREEN}봇 구동 방식을 선택하세요:${NC}"
+    echo -e "${YELLOW}1. 즉시 시작${NC}"
+    echo -e "${YELLOW}2. 스케줄 실행 (매일 오전 7시)${NC}"
+    read -p "선택: " run_choice
+    
+    case $run_choice in
+      1)
+        echo -e "${CYAN}봇을 즉시 시작합니다.${NC}"
+        npm install && npm run start:weth:now
+        ;;
+      2)
+        echo -e "${CYAN}봇을 스케줄 모드로 시작합니다 (매일 오전 7시 실행).${NC}"
+        npm install && npm run start:weth
+        ;;
+      *)
+        echo -e "${RED}잘못된 선택입니다. 기본값으로 즉시 시작합니다.${NC}"
+        npm install && npm run start:weth:now
+        ;;
+    esac
     ;;
 
   *)
